@@ -8,12 +8,14 @@ extern const AP_HAL::HAL& hal;
 
 const AP_Param::GroupInfo AP_MotorsPulsing_Heli::var_info[] = {
     AP_NESTEDGROUPINFO(AP_MotorsMulticopter, 0),
-    // @Param: YAW_DIR
+    // @Param: YAW_PCT
     // @DisplayName: Motor normal or reverse
     // @Description: Used to change motor rotation directions without changing wires
-    // @Values: 1:normal,-1:reverse
+    // @Range: ? ?
+    // @Units: ?
+    // @Increment float
     // @User: Standard
-    AP_GROUPINFO("YAW_DIR", 1, AP_MotorsPulsing_Heli, _yaw_dir, 1),
+    AP_GROUPINFO("YAW_PCT", 1, AP_MotorsPulsing_Heli, _yaw_dir, 1),
 
     // @Param: ROTOR_YAW_FF
     // @DisplayName: Rotor torque FF gain
@@ -50,10 +52,13 @@ void AP_MotorsPulsing_Heli::init(motor_frame_class frame_class, motor_frame_type
     }
 
     // setup actuator scaling
-    SRV_Channels::set_angle(SRV_Channels::get_motor_function(1), AP_MOTORS_COAX_SERVO_INPUT_RANGE);
-    SRV_Channels::set_angle(SRV_Channels::get_motor_function(2), AP_MOTORS_COAX_SERVO_INPUT_RANGE);
+    SRV_Channels::set_angle(SRV_Channels::get_motor_function(AP_MOTORS_MOT_2), AP_MOTORS_COAX_SERVO_INPUT_RANGE);
+    SRV_Channels::set_angle(SRV_Channels::get_motor_function(AP_MOTORS_MOT_3), AP_MOTORS_COAX_SERVO_INPUT_RANGE);
 
     motor_enabled[AP_MOTORS_MOT_1] = true;
+    motor_enabled[AP_MOTORS_MOT_2] = false;
+    motor_enabled[AP_MOTORS_MOT_3] = false;
+
     motor_enabled[AP_MOTORS_MOT_4] = true;
 
     _mav_type = MAV_TYPE_QUADROTOR;
@@ -75,8 +80,8 @@ void AP_MotorsPulsing_Heli::set_update_rate(uint16_t speed_hz)
     _speed_hz = speed_hz;
 
     uint32_t mask =
-        1U << AP_MOTORS_MOT_5 |
-        1U << AP_MOTORS_MOT_6 ;
+        1U << AP_MOTORS_MOT_1 |
+        1U << AP_MOTORS_MOT_4 ;
     rc_set_freq(mask, _speed_hz);
 }
 
@@ -112,7 +117,7 @@ void AP_MotorsPulsing_Heli::output_to_motors()
         set_actuator_with_slew(_actuator[AP_MOTORS_MOT_1], thr_lin.thrust_to_actuator(_rotor_thrust));
         set_actuator_with_slew(_actuator[AP_MOTORS_MOT_4], thr_lin.thrust_to_actuator(_tail_thrust));
         rc_write(AP_MOTORS_MOT_1, output_to_pwm(_actuator[AP_MOTORS_MOT_1]));
-        rc_write(AP_MOTORS_MOT_4, output_to_pwm(_actuator[AP_MOTORS_MOT_4]));
+        rc_write(AP_MOTORS_MOT_4, output_to_pwm(_actuator[AP_MOTORS_MOT_4] * 0.4));
         break;
     }
 
@@ -125,8 +130,6 @@ uint32_t AP_MotorsPulsing_Heli::get_motor_mask()
     //Our mask is the main rotor, pitch, roll, and the tail rotor
     uint32_t motor_mask =
         1U << AP_MOTORS_MOT_1 |
-        1U << AP_MOTORS_MOT_2 |
-        1U << AP_MOTORS_MOT_3 |
         1U << AP_MOTORS_MOT_4;
     uint32_t mask = motor_mask_to_srv_channel_mask(motor_mask);
 

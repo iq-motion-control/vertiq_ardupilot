@@ -8,7 +8,7 @@
 #include <AP_HAL/AP_HAL.h>
 
 #ifndef AP_IQUART_ENABLED
-#define AP_IQUART_ENABLED BOARD_FLASH_SIZE > 1024
+#define AP_IQUART_ENABLED BOARD_FLASH_SIZE > 1
 #endif
 
 #pragma GCC diagnostic ignored "-Wsuggest-override"

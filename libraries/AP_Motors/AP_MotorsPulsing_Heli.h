@@ -57,7 +57,7 @@ protected:
 
     AP_AHRS_View    *_ahrs_view;
 
-    AP_Int8         _yaw_dir;
+    AP_Float         _yaw_dir;
     AP_Float        _rotor_yaw_ff;
     AP_Float        _gyro_ff_gain;
 
